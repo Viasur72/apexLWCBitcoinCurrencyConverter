@@ -6,14 +6,13 @@ private class ConverterSupportClassLightningTests {
 
     // Testing HTTP Get call out
     @IsTest static void runTestCalloutWithStaticResources() {
+
+        // Given
         StaticResourceCalloutMock mock = new StaticResourceCalloutMock();
         mock.setStaticResource('converterMockResponse1');
         mock.setStatusCode(200);
         mock.setHeader('Content-Type', 'application/json');
-        Decimal entryValueOne;
-        Decimal entryValueTwo;
         Rate_Code__c rate;
-        String bitcoinBTC = 'Bitcoin (BTC)';
         String secondaryCurrency = 'US Dollar (USD)';
 
         Rate_Code__c rateUS = new Rate_Code__c();
@@ -32,17 +31,21 @@ private class ConverterSupportClassLightningTests {
 
         Test.setMock(HttpCalloutMock.class, mock);
 
+        // When
         Test.startTest();
         Map<String, Object> result = ConverterSupportClassLightning.makeHTTPCall();
         Integer callouts = Limits.getCallouts();
         Test.stopTest();
 
+        // Then
         System.assert(!(Boolean) result.get('error'), 'Error flag not set correctly');
         System.assertEquals(1, callouts, 'The method should make a callout');
 
     }
 
     @IsTest static void runTestCalloutToUpdateAndInsertNewCodes() {
+
+        // Given
         List<Rate_Code__c> rcList = TestDataCurrencyConverterCalloutClass.TestRateCodeRecordsInserted();
         System.assertEquals(4, rcList.size());
 
@@ -55,6 +58,7 @@ private class ConverterSupportClassLightningTests {
 
         Test.setMock(HttpCalloutMock.class, mock2);
 
+        // When
         Test.startTest();
         Map<String, Object> result = ConverterSupportClassLightning.makeHTTPCall();
         List<Rate_Code__c> inSystemRateCodes = [SELECT Id FROM Rate_Code__c];
@@ -89,12 +93,15 @@ private class ConverterSupportClassLightningTests {
         }
 
         Test.stopTest();
+
+        // Then
+        System.assert(!(Boolean) result.get('error'), 'Error flag not set correctly');
     }
 
     @IsTest static void runTestCalloutNegativeInsertJSON() {
-        List<Rate_Code__c> rcList = TestDataCurrencyConverterCalloutClass.TestRateCodeRecordsInserted();
-        System.assertEquals(4, rcList.size());
 
+        // Given
+        List<Rate_Code__c> rcList = TestDataCurrencyConverterCalloutClass.TestRateCodeRecordsInserted();
         StaticResourceCalloutMock mock3 = new StaticResourceCalloutMock();
 
         // The converterMockResponse2 contains six new code records. Four are already saved in database
@@ -104,23 +111,11 @@ private class ConverterSupportClassLightningTests {
 
         Test.setMock(HttpCalloutMock.class, mock3);
 
+        // When
         Test.startTest();
         Map<String, Object> result = ConverterSupportClassLightning.makeHTTPCall();
-        List<Rate_Code__c> inSystemRateCodes = [SELECT Id FROM Rate_Code__c];
-        System.debug(inSystemRateCodes.size());
-
-        // Passing a JSON response with a code with no value. Code__c is a mandatory field
-        // this should fire the catch error before inserting.
-
         String responseBody = '[{"code":"","name":"New Zealand Dollar","rate":10159.894353}]';
         List<Codes> restCode = (List<Codes>) JSON.deserialize(responseBody, List<Codes>.class);
-        System.debug(restCode.size());
-
-        // We had four rate_Code__c records inserted in database, checking if it is the same after second HTTP call
-        // with negative value entry on JSON response
-        System.assertEquals(1, restCode.size());
-        System.debug(restCode);
-        System.debug('This value should be four: (Negative Input Coming from JSON) :' + inSystemRateCodes.size());
 
         // Trying to insert a new Rate_Code__c record with missing Code__c
         List<Rate_Code__c> codesList = new List<Rate_Code__c>();
@@ -167,12 +162,93 @@ private class ConverterSupportClassLightningTests {
 
         }
 
-        // Initially we had four records coming from the rcList and it should remain the same amount
-        System.debug('It should remain four records after trying to insert missing data from JSON: ' + rcList.size() + 'records in database');
-        System.assertEquals(4, rcList.size());
-
         Test.stopTest();
 
+        // Then
+        // Initially we had four records coming from the rcList and it should remain the same amount
+        System.debug('It should remain four records after trying to insert missing data from JSON: ' + rcList.size() + 'records in database');
+        System.assertEquals(4, rcList.size(), 'Wrong number of records');
+        System.assertEquals(1, restCode.size(), 'Wrong number of records');
+    }
+
+    @IsTest static void runTestDefaultCurrencyEntryChangesDefaultCurrencyBitcoin() {
+
+        // Given
+        List<Rate_Code__c> rcList = TestDataCurrencyConverterCalloutClass.TestRateCodeRecordsInserted();
+        ConverterSupportClassLightning.SubmitCurrencyChanges submitCurrencyChanges = new ConverterSupportClassLightning.SubmitCurrencyChanges();
+        submitCurrencyChanges.entryValueOne = 1;
+        submitCurrencyChanges.entryValueTwo = 0;
+        submitCurrencyChanges.defaultCurrency = rcList[1].Currency__c;
+        submitCurrencyChanges.secondaryCurrency = rcList[2].Currency__c;
+
+        // When
+        Test.startTest();
+        Map<String, Object> result = ConverterSupportClassLightning.defaultCurrencyEntryChanges(submitCurrencyChanges);
+        Test.stopTest();
+
+        // Then
+        System.assert(!(Boolean) result.get('error'), 'Error flag not set correctly');
+        System.assertNotEquals(null, result.get('entryValueTwo'), 'entryValueTwo should not be null');
+    }
+
+    @IsTest static void runTestDefaultCurrencyEntryChangesDefaultCurrencyNotBitcoin() {
+
+        // Given
+        List<Rate_Code__c> rcList = TestDataCurrencyConverterCalloutClass.TestRateCodeRecordsInserted();
+        ConverterSupportClassLightning.SubmitCurrencyChanges submitCurrencyChanges = new ConverterSupportClassLightning.SubmitCurrencyChanges();
+        submitCurrencyChanges.entryValueOne = 1;
+        submitCurrencyChanges.entryValueTwo = 0;
+        submitCurrencyChanges.defaultCurrency = rcList[0].Currency__c;
+        submitCurrencyChanges.secondaryCurrency = rcList[2].Currency__c;
+
+        // When
+        Test.startTest();
+        Map<String, Object> result = ConverterSupportClassLightning.defaultCurrencyEntryChanges(submitCurrencyChanges);
+        Test.stopTest();
+
+        // Then
+        System.assert(!(Boolean) result.get('error'), 'Error flag not set correctly');
+        System.assertNotEquals(null, result.get('entryValueTwo'), 'entryValueTwo should not be null');
+    }
+
+    @IsTest static void runTestSecondaryCurrencyEntryChangesDefaultCurrencyBitcoin() {
+
+        // Given
+        List<Rate_Code__c> rcList = TestDataCurrencyConverterCalloutClass.TestRateCodeRecordsInserted();
+        ConverterSupportClassLightning.SubmitCurrencyChanges submitCurrencyChanges = new ConverterSupportClassLightning.SubmitCurrencyChanges();
+        submitCurrencyChanges.entryValueOne = 1;
+        submitCurrencyChanges.entryValueTwo = 0;
+        submitCurrencyChanges.defaultCurrency = rcList[2].Currency__c;
+        submitCurrencyChanges.secondaryCurrency = rcList[1].Currency__c;
+
+        // When
+        Test.startTest();
+        Map<String, Object> result = ConverterSupportClassLightning.secondaryCurrencyEntryChanges(submitCurrencyChanges);
+        Test.stopTest();
+
+        // Then
+        System.assert(!(Boolean) result.get('error'), 'Error flag not set correctly');
+        System.assertNotEquals(null, result.get('entryValueOne'), 'entryValueOne should not be null');
+    }
+
+    @IsTest static void runTestSecondaryCurrencyEntryChangesDefaultCurrencyNotBitcoin() {
+
+        // Given
+        List<Rate_Code__c> rcList = TestDataCurrencyConverterCalloutClass.TestRateCodeRecordsInserted();
+        ConverterSupportClassLightning.SubmitCurrencyChanges submitCurrencyChanges = new ConverterSupportClassLightning.SubmitCurrencyChanges();
+        submitCurrencyChanges.entryValueOne = 1;
+        submitCurrencyChanges.entryValueTwo = 0;
+        submitCurrencyChanges.defaultCurrency = rcList[0].Currency__c;
+        submitCurrencyChanges.secondaryCurrency = rcList[2].Currency__c;
+
+        // When
+        Test.startTest();
+        Map<String, Object> result = ConverterSupportClassLightning.secondaryCurrencyEntryChanges(submitCurrencyChanges);
+        Test.stopTest();
+
+        // Then
+        System.assert(!(Boolean) result.get('error'), 'Error flag not set correctly');
+        System.assertNotEquals(null, result.get('entryValueOne'), 'entryValueOne should not be null');
     }
 
 }

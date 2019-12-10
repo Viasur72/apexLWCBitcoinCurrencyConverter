@@ -255,12 +255,8 @@ public with sharing class ConverterSupportClassLightning {
 
                 noBitcoinValue = submitCurrencyChanges.entryValueTwo * soqlEntryCurrencyTwo.RateVsBitcoin__c;
                 entryValueOne = noBitcoinValue * soqlEntryCurrencyOne.Rate__c.setScale(3);
-
-                // If both currencies entries are equal, set both to same values
-            } else if (submitCurrencyChanges.secondaryCurrency == submitCurrencyChanges.defaultCurrency) {
-                entryValueTwo = submitCurrencyChanges.entryValueTwo;
-                entryValueOne = submitCurrencyChanges.entryValueTwo;
             }
+
         } catch (ValidationException e) {
             message = e.getMessage();
             error = true;
