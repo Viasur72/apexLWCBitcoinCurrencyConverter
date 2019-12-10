@@ -18,7 +18,8 @@ public with sharing class ConverterSupportClassLightning {
     private static Decimal CalculationEntryValueTwo;
     private static String bitcoinBTC = 'Bitcoin (BTC)';
 
-    public class ValidationException extends Exception {}
+    public class ValidationException extends Exception {
+    }
 
     @AuraEnabled
     public static Map<String, Object> makeHTTPCall() {
@@ -196,12 +197,6 @@ public with sharing class ConverterSupportClassLightning {
 
                 noBitcoinValue = submitCurrencyChanges.entryValueOne * soqlEntryCurrencyOne.RateVsBitcoin__c;
                 entryValueTwo = noBitcoinValue * soqlEntryCurrencyTwo.Rate__c.setScale(3);
-
-                // If both currencies entries are equal, set both to same values
-            } else if (submitCurrencyChanges.defaultCurrency == submitCurrencyChanges.secondaryCurrency &&
-                    (submitCurrencyChanges.entryValueOne != 0 || submitCurrencyChanges.entryValueOne != null)) {
-                entryValueOne = submitCurrencyChanges.entryValueOne.setScale(3);
-                entryValueTwo = submitCurrencyChanges.entryValueOne.setScale(3);
             }
 
         } catch (ValidationException e) {
