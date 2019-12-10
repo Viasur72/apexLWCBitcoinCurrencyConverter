@@ -6,4 +6,4 @@ This is a simple bitcoin currency converter LWC that uses a GET HTTP call to htt
 All classes are included, even the test classes. Feel free to modified or let me know of modifications that can improve this app. 
 
 converterMockResponse1 and converterMockResponse2 are json responses for the test class. 
-Copy their contend and save each file as .json. After that upload them to your Static Resources.
+They are included on the folder Static Resources in this repository together with other files like the component background.
