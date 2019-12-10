@@ -1,0 +1,61 @@
+<!--
+ - Created by cnaranjo on 12/7/19.
+ -->
+<!-- Convertersupportlightning -->
+<template>
+  <c-lwcspinner></c-lwcspinner>
+  <div if:true={errorMessage} class="slds-p-top--xx-small">
+    <c-errormessage error-msg={errorMessage}></c-errormessage>
+  </div>
+  <lightning-card title="Bitcoin Exchange Rate Converter" icon-name="standard:currency">
+    <div style={backgroundStyle}>
+      <!-- DROPDOWN FIELD ONE HERE -->
+      <lightning-layout class="slds-m-around_xx-small" multiple-rows=true>
+        <lightning-layout-item size="6" class="slds-p-around--xx-small">
+          <lightning-combobox
+                  name="selectCurrencyOne"
+                  label="Select Currency"
+                  options={currencyOptionsOne}
+                  value={defaultCurrency}
+                  onchange={defaultCurrencyEntryChange}>
+          </lightning-combobox>
+        </lightning-layout-item>
+
+        <!-- ENTRY VALUE FIELD ONE HERE -->
+        <lightning-layout-item size="6" class="slds-p-around--xx-small">
+          <lightning-input
+                  name="entryValueOne"
+                  label="Insert Amount"
+                  type="number"
+                  value={entryValueOne}
+                  onchange={defaultCurrencyEntryChange}>
+          </lightning-input>
+        </lightning-layout-item>
+      </lightning-layout>
+
+      <!-- DROPDOWN FIELD TWO HERE -->
+      <lightning-layout class="slds-m-around_xx-small" multiple-rows=true>
+        <lightning-layout-item size="6" class="slds-p-around--xx-small">
+          <lightning-combobox
+                  name="selectCurrencyTwo"
+                  label="Select Currency"
+                  options={currencyOptionsTwo}
+                  value={secondaryCurrency}
+                  onchange={secondaryCurrencyEntryChange}>
+          </lightning-combobox>
+        </lightning-layout-item>
+
+        <!-- ENTRY VALUE FIELD TWO HERE -->
+        <lightning-layout-item size="6" class="slds-p-around--xx-small">
+          <lightning-input
+                  name="entryValueTwo"
+                  label="Insert Amount"
+                  type="number"
+                  value={entryValueTwo}
+                  onchange={secondaryCurrencyEntryChange}>
+          </lightning-input>
+        </lightning-layout-item>
+      </lightning-layout>
+    </div>
+  </lightning-card>
+</template>
