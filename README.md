@@ -10,4 +10,4 @@ They are included on the folder Static Resources in this repository together wit
 If you have any issues you can just rename converterMockResponse1 and converterMockResponse2 to .json and after that you can  add them 
 to you static resources. 
 
-**IMPORTA NOTE: Make sure you import to the Race Code obejct the data that is on the RateCodeInitialData file!
+**IMPORTA NOTE: Make sure you import to the Race Code object the data that is on the RateCodeInitialData file!**
